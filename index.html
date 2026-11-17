@@ -59,6 +59,15 @@
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   #termsText{font-size:12.5px;line-height:1.55;min-height:190px;resize:vertical;background:#fcfdff}
   .hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
+  .prepopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .prepopt{border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;cursor:pointer;
+    background:#fff;transition:all .13s}
+  .prepopt:hover{border-color:#b9c6db}
+  .prepopt.active{border-color:var(--brand);background:#f3f7fd;box-shadow:0 4px 12px rgba(10,42,94,.10)}
+  .prepopt .pn{font-size:13px;font-weight:700;color:var(--text);line-height:1.25}
+  .prepopt .pd{font-size:11.5px;color:var(--brand);font-weight:600;margin-top:3px}
+  .prepopt .pm2{font-size:10.8px;color:var(--muted);margin-top:6px;line-height:1.5;word-break:break-word}
+  @media(max-width:520px){.prepopts{grid-template-columns:1fr}}
 
   /* segmented buttons */
   .seg{display:flex;gap:8px;flex-wrap:wrap}
@@ -158,6 +167,7 @@
   .pdfdoc .pnote{margin-top:10px;font-size:10.5px;font-style:italic;color:#444}
   .pdfdoc .psig{margin-top:26px;font-size:11.5px}
   .pdfdoc .psig .nm{font-weight:700;margin-top:20px}
+  .pdfdoc .psig .ct{font-size:10.5px;color:#333;margin-top:1px}
   .pdfdoc .psig p{margin:1px 0}
 
   .print-area{position:absolute;left:-10000px;top:0;width:210mm}
@@ -211,6 +221,9 @@
             <input id="creditDays" type="number" min="0" step="1" value="15" placeholder="e.g. 15, 30, 45">
           </div>
         </div>
+
+        <h2 style="margin-top:18px"><span class="ic">&#9997;</span> Prepared By</h2>
+        <div class="prepopts" id="prepOpts"></div>
 
         <h2 style="margin-top:18px"><span class="ic">&#128220;</span> Commercial Terms &amp; Conditions</h2>
         <textarea id="termsText" rows="11" spellcheck="false" placeholder="One term per line..."></textarea>
@@ -295,6 +308,24 @@ let selectedProduct = null;
 let activeChannel = Object.keys(CATALOG)[0];
 let activePrice = 'dp';
 
+const PREPARERS = [
+  {
+    name: 'Ahamed Emtiaz Shoubho',
+    desig: 'Senior Manager \u2013 Corporate Sales',
+    company: 'Akij Light Engineering Limited',
+    phone: '+880 1335-247290',
+    email: 'shoubho@akijlightengineering.com'
+  },
+  {
+    name: 'Md. Sadhin Khan',
+    desig: 'Senior Officer \u2013 Corporate Sales',
+    company: 'Akij Light Engineering Limited',
+    phone: '+880 1347-579130',
+    email: 'sadhinkhan@akijlightengineering.com'
+  }
+];
+let prepIndex = 0;
+
 const DEFAULT_TERMS = [
   'Payment: 100% advance along with Work Order.',
   'Mode of Payment: Cash/Pay Order/EFTN or Account Payee cheque in favor of Akij Light Engineering Ltd.',
@@ -370,6 +401,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   renderChannels();
   renderPriceTypes();
+  renderPreparers();
   buildCategories();
   renderProducts();
   recalc();
@@ -400,6 +432,23 @@ function renderPriceTypes(){
     d.className='opt'+(t.id===activePrice?' active':'');
     d.textContent=t.label;
     d.onclick=()=>{ activePrice=t.id; renderPriceTypes(); renderProducts(); };
+    wrap.appendChild(d);
+  });
+}
+
+function renderPreparers(){
+  const wrap = $('prepOpts');
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  PREPARERS.forEach((p, i) => {
+    const d = document.createElement('div');
+    d.className = 'prepopt' + (i === prepIndex ? ' active' : '');
+    d.innerHTML = '<div class="pn"></div><div class="pd"></div><div class="pm2"></div>';
+    d.querySelector('.pn').textContent = p.name;
+    d.querySelector('.pd').textContent = p.desig;
+    d.querySelector('.pm2').textContent = p.phone + '\n' + p.email;
+    d.querySelector('.pm2').style.whiteSpace = 'pre-line';
+    d.onclick = () => { prepIndex = i; renderPreparers(); };
     wrap.appendChild(d);
   });
 }
@@ -620,12 +669,14 @@ function buildPdfDocument(){
 
   const H_note = '<div class="pnote">This is a system-generated quotation and requires no signature.</div>';
 
+  const P = PREPARERS[prepIndex] || PREPARERS[0];
   const H_sig =
     '<div class="psig">'+
       '<p>Prepared by,</p>'+
-      '<p class="nm">Ahamed Emtiaz Shoubho</p>'+
-      '<p>Senior Manager &ndash; Corporate Sales</p>'+
-      '<p>Akij Light Engineering Limited</p>'+
+      '<p class="nm">'+esc(P.name)+'</p>'+
+      '<p>'+esc(P.desig)+'</p>'+
+      '<p>'+esc(P.company)+'</p>'+
+      '<p class="ct">'+esc(P.phone)+'  |  '+esc(P.email)+'</p>'+
     '</div>';
 
   // ---------- measure ----------
