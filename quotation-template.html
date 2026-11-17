@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALEL Quotation Builder</title>
+<style>
+  :root{
+    --brand:#0a2a5e; --brand2:#123c7d; --accent:#e11d2e; --gold:#c9a227;
+    --bg:#f4f6fa; --card:#fff; --border:#dde3ec; --text:#16233a; --muted:#6b7789;
+    --ok:#0f7a4a; --warn:#b45309; --danger:#c0392b;
+    --shadow:0 1px 3px rgba(15,35,70,.07),0 8px 24px rgba(15,35,70,.05);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased}
+
+  /* ---------- App shell ---------- */
+  .app{max-width:1240px;margin:0 auto;padding:18px 20px 40px}
+  .topbar{position:relative;overflow:hidden;border-radius:14px;padding:20px 26px;margin-bottom:20px;
+    background:linear-gradient(115deg,#0a2a5e 0%,#123c7d 55%,#1b4fa0 100%);color:#fff;
+    display:flex;align-items:center;justify-content:space-between;gap:18px;box-shadow:var(--shadow)}
+  .topbar::after{content:'';position:absolute;right:-60px;top:-70px;width:260px;height:260px;border-radius:50%;
+    background:radial-gradient(circle,rgba(225,29,46,.35),transparent 70%)}
+  .brandblock{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+  .brandmark{width:52px;height:52px;border-radius:12px;background:var(--accent);display:grid;place-items:center;
+    font-weight:900;font-size:17px;letter-spacing:.5px;color:#fff;box-shadow:0 6px 18px rgba(225,29,46,.4)}
+  .topbar h1{font-size:21px;font-weight:700;letter-spacing:.2px}
+  .topbar .sub{font-size:12.5px;opacity:.82;margin-top:3px}
+  .topbar .live{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;
+    background:rgba(255,255,255,.15);padding:4px 10px;border-radius:20px;margin-left:10px;vertical-align:middle}
+  .dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.25)}
+
+  /* ---------- Buttons ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:9px;
+    padding:11px 18px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;
+    transition:filter .15s,transform .06s,box-shadow .15s;white-space:nowrap}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(225,29,46,.28)}
+  .btn-primary:hover{filter:brightness(1.07)}
+  .btn-dark{background:var(--brand);color:#fff}
+  .btn-dark:hover{filter:brightness(1.12)}
+  .btn-ghost{background:#eef2f8;color:var(--text)}
+  .btn-ghost:hover{background:#e3e9f2}
+  .btn-danger{background:#fdeceb;color:var(--danger)}
+  .btn-danger:hover{background:#fbdcd9}
+  .btn-sm{padding:6px 11px;font-size:12.5px;border-radius:7px}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* ---------- Layout ---------- */
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:20px;align-items:start}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:20px;box-shadow:var(--shadow)}
+  .card + .card{margin-top:20px}
+  .card h2{font-size:14px;font-weight:700;color:var(--brand);letter-spacing:.3px;
+    display:flex;align-items:center;gap:8px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+  .card h2 .ic{font-size:16px}
+
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:12px 0 5px;letter-spacing:.2px}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;
+    font-size:13.5px;font-family:inherit;color:var(--text);background:#fff;outline:none;
+    transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(18,60,125,.12)}
+  textarea{resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+  /* ---------- Product picker ---------- */
+  .pickerchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+  .chip{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:20px;background:#eef2f8;color:var(--muted);
+    cursor:pointer;border:1px solid transparent;transition:all .13s}
+  .chip:hover{background:#e3e9f2}
+  .chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .searchwrap{position:relative;margin-top:12px}
+  .searchwrap input{padding-left:36px}
+  .searchwrap .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+  .plist{margin-top:12px;border:1px solid var(--border);border-radius:10px;max-height:360px;overflow-y:auto;background:#fff}
+  .plist::-webkit-scrollbar{width:9px}
+  .plist::-webkit-scrollbar-thumb{background:#c8d2e2;border-radius:9px;border:2px solid #fff}
+  .pitem{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;
+    border-bottom:1px solid #f0f3f8;cursor:pointer;transition:background .1s}
+  .pitem:last-child{border-bottom:0}
+  .pitem:hover{background:#f6f9fe}
+  .pitem .pn{font-size:13px;font-weight:500;line-height:1.35}
+  .pitem .pc{font-size:11px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+  .pitem .pp{font-size:13.5px;font-weight:700;color:var(--brand);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .pitem .addico{width:24px;height:24px;border-radius:6px;background:#eef2f8;color:var(--brand);
+    display:grid;place-items:center;font-weight:700;flex:0 0 auto}
+  .pitem:hover .addico{background:var(--brand);color:#fff}
+  .empty{padding:26px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* ---------- Quote table ---------- */
+  .qwrap{overflow-x:auto}
+  .qtable{width:100%;border-collapse:collapse;min-width:640px}
+  .qtable th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);
+    text-align:left;padding:9px 8px;border-bottom:2px solid var(--border);font-weight:700}
+  .qtable th.n,.qtable td.n{text-align:right}
+  .qtable td{padding:10px 8px;border-bottom:1px solid #f0f3f8;font-size:13px;vertical-align:middle}
+  .qtable tr:hover td{background:#fafcff}
+  .qtable input[type=number]{width:78px;padding:7px 8px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+  .qtable .pname{font-weight:500;line-height:1.3}
+  .qtable .pcode{font-size:11px;color:var(--muted);margin-top:2px}
+  .qempty{text-align:center;color:var(--muted);padding:32px 10px;font-size:13px}
+  .badge{display:inline-block;background:#e8f0fb;color:var(--brand);font-size:11px;font-weight:700;
+    padding:3px 9px;border-radius:20px;margin-left:6px}
+
+  /* ---------- Totals ---------- */
+  .totals{max-width:360px;margin-left:auto;margin-top:16px;border-top:2px solid var(--border);padding-top:14px}
+  .trow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:6px 2px;font-size:13.5px}
+  .trow .lbl{color:var(--muted);font-weight:600}
+  .trow input[type=number]{width:96px;text-align:right;padding:6px 9px}
+  .trow.grand{border-top:2px solid var(--brand);margin-top:8px;padding-top:12px;font-size:18px;font-weight:800;color:var(--brand)}
+  .trow.grand .lbl{color:var(--brand);font-size:14px}
+
+  /* ---------- Popover ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(12,22,40,.4);z-index:60;backdrop-filter:blur(1px)}
+  .pop{position:fixed;z-index:70;background:#fff;border-radius:13px;box-shadow:0 20px 60px rgba(10,25,55,.28);
+    padding:18px;width:290px;border:1px solid var(--border)}
+  .pop h4{font-size:13.5px;line-height:1.35;margin-bottom:4px}
+  .pop .pm{font-size:11.5px;color:var(--muted);margin-bottom:12px;font-variant-numeric:tabular-nums}
+  .pop .acts{display:flex;gap:9px;margin-top:14px}
+  .pop .acts .btn{flex:1}
+  .pricerow{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);margin-top:10px}
+  .pricerow input{width:110px}
+
+  .footer-note{text-align:center;color:var(--muted);font-size:11.5px;padding:22px 0 6px}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:#0f7a4a;color:#fff;padding:11px 20px;border-radius:9px;font-size:13px;font-weight:600;
+    opacity:0;pointer-events:none;transition:all .25s;z-index:90;box-shadow:0 8px 24px rgba(15,122,74,.35)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ================= PRINT / PDF ================= */
+  .print-area{display:none}
+  @media print{
+    @page{size:A4;margin:0}
+    html,body{background:#fff}
+    .app,.footer-note,.overlay,.pop,.toast{display:none!important}
+    .print-area{display:block}
+    .pdoc{width:100%;min-height:297mm;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:#000}
+    .pdoc .phdr{width:100%;display:block}
+    .pdoc .pftr{width:100%;display:block;margin-top:auto}
+    .pbody{flex:1 0 auto;padding:6mm 16mm 8mm}
+    .pdoc,.pbody{font-size:11.5px;line-height:1.45}
+    .ptop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+    .ptop h2{font-size:19px;color:#0a2a5e;letter-spacing:1px;margin:0 0 6px}
+    .ptop .meta{text-align:right;font-size:11.5px;color:#222}
+    .ptop .meta div{margin:2px 0}
+    .psec{margin-bottom:10px}
+    .psec h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#0a2a5e;
+      border-bottom:1px solid #c9d3e3;padding-bottom:3px;margin-bottom:5px;font-weight:700}
+    .psec p{margin:2px 0;font-size:11.5px;color:#111}
+    .pgreet p{margin:5px 0;text-align:justify;font-size:11.5px}
+    .ptable{width:100%;border-collapse:collapse;margin:10px 0 12px}
+    .ptable th{background:#0a2a5e;color:#fff;font-size:10.5px;padding:7px 6px;text-align:left;font-weight:700}
+    .ptable th.n{text-align:right}
+    .ptable td{border-bottom:1px solid #dde3ec;padding:6px;font-size:11px;vertical-align:top}
+    .ptable td.n{text-align:right;font-variant-numeric:tabular-nums}
+    .ptable tr:nth-child(even) td{background:#fafbfd}
+    .psum{width:46%;margin-left:auto;margin-bottom:12px}
+    .prow{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 4px}
+    .prow.tot{font-weight:800;font-size:13px;border-top:2px solid #0a2a5e;margin-top:5px;padding-top:6px;color:#0a2a5e}
+    .pterms{margin-top:14px;page-break-inside:avoid}
+    .pterms h3{font-size:11.5px;color:#0a2a5e;margin-bottom:5px}
+    .pterms p{margin:2.5px 0;font-size:10.8px;text-align:justify}
+    .pnote{margin-top:10px;font-size:10.5px;font-style:italic;color:#444}
+    .psig{margin-top:26px;font-size:11.5px;page-break-inside:avoid}
+    .psig .nm{font-weight:700;margin-top:20px}
+    .psig p{margin:1px 0}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brandblock">
+      <div class="brandmark">ALEL</div>
+      <div>
+        <h1>Quotation Builder
+          <span class="live"><span class="dot"></span>LIVE RTM PRICE</span>
+        </h1>
+        <div class="sub">Akij Light Engineering Limited &middot; <span id="catCount">0</span> categories &middot; <span id="itemTotal">0</span> products</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="generatePdf()">&#128196; Generate PDF</button>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <div>
+      <div class="card">
+        <h2><span class="ic">&#128203;</span> Quotation Details</h2>
+        <div class="row">
+          <div><label>Date</label><input id="qdate" type="date"></div>
+          <div><label>Valid Until</label><input id="qvalid" type="date"></div>
+        </div>
+        <h2 style="margin-top:18px"><span class="ic">&#128100;</span> Customer Information</h2>
+        <div class="row">
+          <div><label>Customer Name</label><input id="cname" placeholder="e.g. Rahman Traders"></div>
+          <div><label>Contact Person</label><input id="cattn" placeholder="Attention"></div>
+        </div>
+        <div class="row">
+          <div><label>Address</label><input id="caddress" placeholder="Street, Area, City"></div>
+          <div><label>Phone</label><input id="cphone" placeholder="+880 1XXX-XXXXXX"></div>
+        </div>
+        <div class="row">
+          <div><label>Email</label><input id="cemail" placeholder="name@email.com"></div>
+          <div><label>Payment Terms</label>
+            <select id="qpterms">
+              <option>100% Advance with Work Order</option>
+              <option selected>50% Advance, 50% Before Delivery</option>
+              <option>7 Days Credit</option>
+              <option>15 Days Credit</option>
+              <option>30 Days Credit</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      <div class="card">
+        <h2><span class="ic">&#128230;</span> Add Products</h2>
+
+        <label>Price Basis (live RTM channel)</label>
+        <div class="pickerchips" id="priceChips"></div>
+
+        <div class="row" style="margin-top:12px">
+          <div><label>Category</label><select id="selCat"></select></div>
+          <div><label>Sub-Category</label><select id="selSub"></select></div>
+        </div>
+
+        <div class="searchwrap">
+          <span class="si">&#128269;</span>
+          <input id="search" placeholder="Search product name or code..." oninput="renderProducts()">
+        </div>
+        <div id="plist" class="plist"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUOTE -->
+  <div class="card" style="margin-top:20px">
+    <h2><span class="ic">&#128221;</span> Quotation Items <span class="badge" id="itemBadge">0 items</span></h2>
+    <div class="qwrap">
+      <table class="qtable">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th>Product</th>
+            <th style="width:84px">Code</th>
+            <th class="n" style="width:96px">Unit Price</th>
+            <th class="n" style="width:80px">Qty</th>
+            <th class="n" style="width:110px">Amount</th>
+            <th style="width:56px"></th>
+          </tr>
+        </thead>
+        <tbody id="qbody"></tbody>
+      </table>
+    </div>
+    <div id="qempty" class="qempty">No items yet &mdash; pick products from the panel above.</div>
+
+    <div class="totals">
+      <div class="trow"><span class="lbl">Subtotal</span><span id="subtotal">0.00</span></div>
+      <div class="trow"><span class="lbl">Discount (%)</span><input id="discPct" type="number" min="0" max="100" value="0" oninput="recalc()"></div>
+      <div class="trow"><span class="lbl">Discount Amount</span><span id="discAmt">0.00</span></div>
+      <div class="trow grand"><span class="lbl">Total (BDT)</span><span id="grandTotal">0.00</span></div>
+    </div>
+  </div>
+
+  <div class="footer-note">ALEL Quotation Builder &middot; Prices sourced live from RTM item-rate configuration &middot; Business Unit: ALEL</div>
+</div>
+
+<div class="print-area" id="printArea"></div>
+
+<div class="overlay" id="overlay" onclick="hidePop()" style="display:none"></div>
+<div class="pop" id="pop" style="display:none"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ================= DATA =================
+const CATALOG = __CATALOG_JSON__;
+const CHANNELS = __CHANNELS_JSON__;
+const ITEM_COUNT = __ITEM_COUNT__;
+const HEADER_IMG = 'data:image/jpeg;base64,__HEADER_B64__';
+const FOOTER_IMG = 'data:image/jpeg;base64,__FOOTER_B64__';
+
+const items = [];
+let selectedProduct = null;
+let activeChannel = Object.keys(CHANNELS)[0];
+
+// ================= HELPERS =================
+const $ = (id) => document.getElementById(id);
+const pad = (n) => (n < 10 ? '0' + n : '' + n);
+const fmt = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// price for item in a channel, falling back to any available
+function priceIn(p, ch) {
+  if (p.prices[ch] != null) return p.prices[ch];
+  const ks = Object.keys(p.prices);
+  return ks.length ? p.prices[ks[0]] : 0;
+}
+function bestChannel(p) {
+  if (p.prices[activeChannel] != null) return activeChannel;
+  return Object.keys(p.prices)[0];
+}
+
+// ================= INIT =================
+window.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  $('qdate').value = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const v = new Date(); v.setDate(v.getDate() + 15);
+  $('qvalid').value = v.getFullYear() + '-' + pad(v.getMonth() + 1) + '-' + pad(v.getDate());
+
+  $('catCount').textContent = Object.keys(CATALOG).length;
+  $('itemTotal').textContent = ITEM_COUNT;
+
+  renderPriceChips();
+  buildCategories();
+  renderProducts();
+  recalc();
+});
+
+// ================= PRICE CHANNEL CHIPS =================
+function renderPriceChips() {
+  const wrap = $('priceChips');
+  wrap.innerHTML = '';
+  Object.entries(CHANNELS).forEach(([id, name]) => {
+    const c = document.createElement('div');
+    c.className = 'chip' + (id === activeChannel ? ' active' : '');
+    c.textContent = name;
+    c.onclick = () => { activeChannel = id; renderPriceChips(); renderProducts(); };
+    wrap.appendChild(c);
+  });
+}
+
+// ================= CATEGORIES =================
+function buildCategories() {
+  const sel = $('selCat');
+  sel.innerHTML = '<option value="">All categories</option>';
+  Object.keys(CATALOG).sort().forEach((c) => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o);
+  });
+  sel.onchange = () => { buildSubs(); renderProducts(); };
+  buildSubs();
+}
+function buildSubs() {
+  const cat = $('selCat').value;
+  const sel = $('selSub');
+  sel.innerHTML = '<option value="">All sub-categories</option>';
+  if (!cat) return;
+  Object.keys(CATALOG[cat]).sort().forEach((s) => {
+    const o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o);
+  });
+  sel.onchange = renderProducts;
+}
+
+// ================= PRODUCT LIST =================
+function renderProducts() {
+  const cat = $('selCat').value;
+  const sub = $('selSub').value;
+  const q = $('search').value.trim().toLowerCase();
+  const list = $('plist');
+  list.innerHTML = '';
+
+  let prods = [];
+  if (cat && sub) prods = CATALOG[cat][sub].slice();
+  else if (cat) { for (const s in CATALOG[cat]) prods = prods.concat(CATALOG[cat][s]); }
+  else { for (const c in CATALOG) for (const s in CATALOG[c]) prods = prods.concat(CATALOG[c][s]); }
+
+  if (q) prods = prods.filter((p) => p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q));
+
+  if (!prods.length) { list.innerHTML = '<div class="empty">No products found.</div>'; return; }
+
+  const MAX = 250;
+  prods.slice(0, MAX).forEach((p) => {
+    const ch = bestChannel(p);
+    const d = document.createElement('div');
+    d.className = 'pitem';
+    d.innerHTML =
+      '<div><div class="pn"></div><div class="pc"></div></div>' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<div class="pp"></div><div class="addico">+</div>' +
+      '</div>';
+    d.querySelector('.pn').textContent = p.name;
+    d.querySelector('.pc').textContent = p.code + '  \u00b7  ' + (CHANNELS[ch] || 'Rate');
+    d.querySelector('.pp').textContent = 'Tk ' + fmt(priceIn(p, ch));
+    d.onclick = () => openPop(p, d);
+    list.appendChild(d);
+  });
+  if (prods.length > MAX) {
+    const m = document.createElement('div');
+    m.className = 'empty';
+    m.textContent = 'Showing ' + MAX + ' of ' + prods.length + ' \u2014 refine your search.';
+    list.appendChild(m);
+  }
+}
+
+// ================= ADD POPOVER =================
+function openPop(p, el) {
+  selectedProduct = p;
+  const r = el.getBoundingClientRect();
+  const pop = $('pop'), ov = $('overlay');
+  const ch = bestChannel(p);
+  let left = Math.min(Math.max(10, r.left), window.innerWidth - 300);
+  let top = r.bottom + 8;
+  if (top + 260 > window.innerHeight) top = Math.max(10, r.top - 260);
+
+  pop.innerHTML =
+    '<h4></h4><div class="pm"></div>' +
+    '<label>Quantity</label><input id="popQty" type="number" min="1" value="1">' +
+    '<div class="pricerow">Unit price (Tk) <input id="popPrice" type="number" min="0" step="0.01" value="' + priceIn(p, ch) + '"></div>' +
+    '<div class="acts"><button class="btn btn-ghost" onclick="hidePop()">Cancel</button>' +
+    '<button class="btn btn-dark" onclick="addItem()">Add</button></div>';
+
+  pop.querySelector('h4').textContent = p.name;
+  const avail = Object.keys(p.prices).map((k) => (CHANNELS[k] || k) + ': Tk ' + fmt(p.prices[k])).join('  |  ');
+  pop.querySelector('.pm').textContent = p.code + '  \u00b7  ' + avail;
+
+  pop.style.left = left + 'px'; pop.style.top = top + 'px';
+  pop.style.display = 'block'; ov.style.display = 'block';
+  const qEl = $('popQty'); qEl.focus(); qEl.select();
+}
+function hidePop() { $('pop').style.display = 'none'; $('overlay').style.display = 'none'; selectedProduct = null; }
+
+function addItem() {
+  if (!selectedProduct) return;
+  const qty = Math.max(1, parseInt($('popQty').value, 10) || 1);
+  const price = Math.max(0, parseFloat($('popPrice').value) || 0);
+  const ch = bestChannel(selectedProduct);
+  const ex = items.find((i) => i.code === selectedProduct.code && i.price === price && i.channel === ch);
+  if (ex) ex.qty += qty;
+  else items.push({ code: selectedProduct.code, name: selectedProduct.name, price, qty, channel: ch });
+  hidePop(); renderQuote();
+  toast('Added to quotation');
+}
+
+// ================= QUOTE TABLE =================
+function renderQuote() {
+  const body = $('qbody'), empty = $('qempty');
+  body.innerHTML = '';
+  if (!items.length) {
+    empty.style.display = 'block';
+    $('itemBadge').textContent = '0 items';
+    recalc(); return;
+  }
+  empty.style.display = 'none';
+  $('itemBadge').textContent = items.length + ' item' + (items.length > 1 ? 's' : '');
+
+  items.forEach((it, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td>' + (i + 1) + '</td>' +
+      '<td><div class="pname"></div><div class="pcode"></div></td>' +
+      '<td class="pcode"></td>' +
+      '<td class="n"><input type="number" min="0" step="0.01" value="' + it.price + '" onchange="setPrice(' + i + ',this.value)"></td>' +
+      '<td class="n"><input type="number" min="1" value="' + it.qty + '" onchange="setQty(' + i + ',this.value)"></td>' +
+      '<td class="n" id="amt' + i + '"></td>' +
+      '<td class="n"><button class="btn btn-danger btn-sm" onclick="removeItem(' + i + ')" title="Remove">&#10005;</button></td>';
+    tr.cells[1].querySelector('.pname').textContent = it.name;
+    tr.cells[1].querySelector('.pcode').textContent = CHANNELS[it.channel] || '';
+    tr.cells[2].textContent = it.code;
+    body.appendChild(tr);
+  });
+  recalc();
+}
+function setPrice(i, v) { items[i].price = Math.max(0, parseFloat(v) || 0); renderQuote(); }
+function setQty(i, v) { items[i].qty = Math.max(1, parseInt(v, 10) || 1); renderQuote(); }
+function removeItem(i) { items.splice(i, 1); renderQuote(); }
+
+function recalc() {
+  let sub = 0;
+  items.forEach((it, i) => {
+    const a = it.price * it.qty;
+    sub += a;
+    const c = $('amt' + i); if (c) c.textContent = fmt(a);
+  });
+  const dp = Math.min(100, Math.max(0, parseFloat($('discPct').value) || 0));
+  const discAmt = sub * dp / 100;
+  const total = sub - discAmt;
+  $('subtotal').textContent = fmt(sub);
+  $('discAmt').textContent = fmt(discAmt);
+  $('grandTotal').textContent = fmt(total);
+}
+
+// ================= PDF =================
+function generatePdf() {
+  if (!items.length) { alert('Please add at least one product to the quotation.'); return; }
+
+  const qdate = esc($('qdate').value), qvalid = esc($('qvalid').value);
+  const qpterms = esc($('qpterms').value);
+  const cname = esc($('cname').value), cattn = esc($('cattn').value);
+  const caddress = esc($('caddress').value), cphone = esc($('cphone').value), cemail = esc($('cemail').value);
+
+  const sub = items.reduce((s, it) => s + it.price * it.qty, 0);
+  const dp = Math.min(100, Math.max(0, parseFloat($('discPct').value) || 0));
+  const discAmt = sub * dp / 100;
+  const total = sub - discAmt;
+
+  let rows = '';
+  items.forEach((it, i) => {
+    rows += '<tr><td>' + (i + 1) + '</td><td>' + esc(it.name) + '</td><td>' + esc(it.code) + '</td>' +
+      '<td class="n">' + fmt(it.price) + '</td><td class="n">' + it.qty + '</td>' +
+      '<td class="n">' + fmt(it.price * it.qty) + '</td></tr>';
+  });
+
+  const terms = [
+    'Payment: 100% advance along with Work Order.',
+    'Mode of Payment: Cash/Pay Order/EFTN or Account Payee cheque in favor of Akij Light Engineering Ltd.',
+    'Offer validity: Our offer remains valid 15 days from the date of submission.',
+    'Packaging: Standard packaging. Any damaged/broken goods must be immediately brought to the notice of ALEL.',
+    'Delivery of goods: Delivery will be effected within 3-5 working days, free of cost of transportation at your site (within jurisdiction area) from the date of receiving your work order.',
+    'VAT &amp; AIT: VAT &amp; AIT are inclusive with the offer.',
+    'Warranty Period: 01 year (12 Months) from the date of Delivery.'
+  ];
+
+  $('printArea').innerHTML =
+    '<div class="pdoc">' +
+      '<img class="phdr" src="' + HEADER_IMG + '" alt="ALEL letterhead">' +
+      '<div class="pbody">' +
+
+        '<div class="ptop">' +
+          '<div><h2>QUOTATION</h2></div>' +
+          '<div class="meta">' +
+            '<div><strong>Date:</strong> ' + qdate + '</div>' +
+            '<div><strong>Valid Until:</strong> ' + qvalid + '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="psec">' +
+          '<h3>Customer</h3>' +
+          '<p><strong>' + (cname || '-') + '</strong></p>' +
+          (cattn ? '<p>Attention: ' + cattn + '</p>' : '') +
+          (caddress ? '<p>' + caddress + '</p>' : '') +
+          (cphone || cemail ? '<p>' + (cphone ? 'Phone: ' + cphone : '') + (cemail ? (cphone ? ' | ' : '') + 'Email: ' + cemail : '') + '</p>' : '') +
+          '<p>Payment Terms: ' + qpterms + '</p>' +
+        '</div>' +
+
+        '<div class="pgreet">' +
+          '<p>Dear Sir,</p>' +
+          '<p>Thank you for your kind interest in Akij Light Engineering Ltd. It is our pleasure to submit our offer for your kind consideration.</p>' +
+          '<p>We trust that you will find our offer in line with your requirements and look forward to the opportunity to establish a mutually beneficial business relationship with your esteemed organization.</p>' +
+        '</div>' +
+
+        '<table class="ptable">' +
+          '<thead><tr><th>#</th><th>Product Description</th><th>Code</th><th class="n">Unit Price</th><th class="n">Qty</th><th class="n">Amount</th></tr></thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+
+        '<div class="psum">' +
+          '<div class="prow"><span>Subtotal</span><span>' + fmt(sub) + '</span></div>' +
+          '<div class="prow"><span>Discount (' + dp + '%)</span><span>' + fmt(discAmt) + '</span></div>' +
+          '<div class="prow tot"><span>Total (BDT)</span><span>' + fmt(total) + '</span></div>' +
+        '</div>' +
+
+        '<div class="pterms">' +
+          '<h3>Commercial Terms &amp; Conditions</h3>' +
+          terms.map((t, i) => '<p>' + (i + 1) + '. ' + t + '</p>').join('') +
+        '</div>' +
+
+        '<div class="pnote">This is a system-generated quotation and requires no signature.</div>' +
+
+        '<div class="psig">' +
+          '<p>Prepared by,</p>' +
+          '<p class="nm">Ahamed Emtiaz Shoubho</p>' +
+          '<p>Senior Manager &ndash; Corporate Sales</p>' +
+          '<p>Akij Light Engineering Limited</p>' +
+        '</div>' +
+
+      '</div>' +
+      '<img class="pftr" src="' + FOOTER_IMG + '" alt="ALEL letterhead footer">' +
+    '</div>';
+
+  window.print();
+}
+</script>
+</body>
+</html>

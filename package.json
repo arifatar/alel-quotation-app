@@ -1,0 +1,10 @@
+{
+  "name": "alel-quotation-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ALEL Quotation Builder - live RTM pricing, PDF export on official letterhead",
+  "scripts": {
+    "build": "node build.js",
+    "start": "npx serve ."
+  }
+}
