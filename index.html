@@ -124,12 +124,12 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* ============ PRINT ============ */
-  .print-area{display:none}
+  .print-area{position:absolute;left:-10000px;top:0;width:210mm}
   @media print{
     @page{size:A4;margin:0}
     html,body{background:#fff}
     .app,.footer-note,.overlay,.pop,.toast{display:none!important}
-    .print-area{display:block}
+    .print-area{display:block;position:static;left:auto;top:auto;width:auto}
     .pdoc{width:100%;min-height:297mm;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:#000}
     .pdoc .phdr{width:100%;display:block;margin-top:10mm}
     .pdoc .pftr{width:100%;display:block;margin-top:auto;margin-bottom:9mm}
@@ -338,6 +338,9 @@ window.addEventListener('DOMContentLoaded', () => {
   lastAutoPayLine = '1. Payment: ' + payLine($('creditDays').value.trim()) + '.';
   $('termsText').value = [lastAutoPayLine].concat(DEFAULT_TERMS.slice(1).map((t, i) => (i + 2) + '. ' + t)).join('\n');
   $('creditDays').addEventListener('input', syncPayTerm);
+
+  // preload letterhead so it is decoded before the print dialog opens
+  [HEADER_IMG, FOOTER_IMG].forEach((src) => { const im = new Image(); im.src = src; });
 });
 
 function renderChannels(){
@@ -488,6 +491,29 @@ function recalc(){
 
 function generatePdf(){
   if(!items.length){ alert('Please add at least one product to the quotation.'); return; }
+  buildPdfDocument()
+    .then(() => waitForImages($('printArea')))
+    .then(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))))
+    .then(() => window.print())
+    .catch(() => window.print());
+}
+
+function waitForImages(root){
+  const imgs = Array.from(root.querySelectorAll('img'));
+  return Promise.all(imgs.map(img => {
+    if (img.complete && img.naturalWidth > 0) {
+      return img.decode ? img.decode().catch(()=>{}) : Promise.resolve();
+    }
+    return new Promise(res => {
+      const done = () => (img.decode ? img.decode().catch(()=>{}).then(res) : res());
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', res, { once: true });
+    });
+  }));
+}
+
+function buildPdfDocument(){
+  return new Promise(resolve => {
 
   const qdate=esc($('qdate').value), qvalid=esc($('qvalid').value);
   const cname=esc($('cname').value), cattn=esc($('cattn').value);
@@ -556,7 +582,8 @@ function generatePdf(){
       '<img class="pftr" src="'+FOOTER_IMG+'" alt="ALEL letterhead footer">'+
     '</div>';
 
-  window.print();
+    resolve();
+  });
 }
 </script>
 </body>
