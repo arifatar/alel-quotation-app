@@ -124,48 +124,51 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
   /* ============ PRINT ============ */
+  /* ---------- PDF document (global so it can be measured) ---------- */
+  .pdfdoc{font-family:Arial,Helvetica,sans-serif;color:#000;font-size:11.5px;line-height:1.45}
+  .pdfdoc .page{position:relative;width:210mm;height:297mm;overflow:hidden;background:#fff}
+  .pdfdoc .phdr{position:absolute;top:10mm;left:0;width:100%}
+  .pdfdoc .pftr{position:absolute;bottom:9mm;left:0;width:100%}
+  .pdfdoc .pcontent{position:absolute;top:28mm;left:16mm;width:178mm;height:243mm;overflow:hidden}
+  .pdfdoc .ptop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .pdfdoc .ptop h2{font-size:19px;color:#0a2a5e;letter-spacing:1px;margin:0}
+  .pdfdoc .ptop .meta{text-align:right;font-size:11.5px;color:#222}
+  .pdfdoc .ptop .meta div{margin:2px 0}
+  .pdfdoc .psec{margin-bottom:10px}
+  .pdfdoc .psec p{margin:2px 0;font-size:11.5px;color:#111}
+  .pdfdoc .pgreet p{margin:5px 0;text-align:justify;font-size:11.5px}
+  .pdfdoc .pgreet .attn{margin-bottom:8px;text-align:left}
+  .pdfdoc .ptable{width:100%;border-collapse:collapse;margin:0 0 14px;border:1px solid #c9d3e3;table-layout:fixed}
+  .pdfdoc .ptable th{background:#0a2a5e;color:#fff;font-size:9.6px;letter-spacing:.5px;text-transform:uppercase;
+    padding:8px 7px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,.18)}
+  .pdfdoc .ptable th:last-child{border-right:0}
+  .pdfdoc .ptable th.n{text-align:right}
+  .pdfdoc .ptable td{padding:7px;font-size:10.6px;border-bottom:1px solid #e3e9f2;border-right:1px solid #eef2f8;vertical-align:top}
+  .pdfdoc .ptable td:last-child{border-right:0}
+  .pdfdoc .ptable tbody tr:nth-child(even){background:#f7f9fd}
+  .pdfdoc .ptable td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pdfdoc .psum{width:46%;margin-left:auto;margin-bottom:6px}
+  .pdfdoc .prow{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 4px}
+  .pdfdoc .prow.tot{font-weight:800;font-size:13px;border-top:2px solid #0a2a5e;margin-top:5px;padding-top:6px;color:#0a2a5e}
+  .pdfdoc .pinwords{font-size:11px;color:#111;margin:4px 0 14px;padding-top:6px;border-top:1px dashed #c9d3e3}
+  .pdfdoc .pinwords strong{color:#0a2a5e}
+  .pdfdoc .pterms{margin-top:14px}
+  .pdfdoc .pterms h3{font-size:11.5px;color:#0a2a5e;margin-bottom:5px}
+  .pdfdoc .pterms p{margin:2.5px 0;font-size:10.8px;text-align:justify}
+  .pdfdoc .pnote{margin-top:10px;font-size:10.5px;font-style:italic;color:#444}
+  .pdfdoc .psig{margin-top:26px;font-size:11.5px}
+  .pdfdoc .psig .nm{font-weight:700;margin-top:20px}
+  .pdfdoc .psig p{margin:1px 0}
+
   .print-area{position:absolute;left:-10000px;top:0;width:210mm}
+
   @media print{
     @page{size:A4;margin:0}
     html,body{background:#fff}
     .app,.footer-note,.overlay,.pop,.toast{display:none!important}
     .print-area{display:block;position:static;left:auto;top:auto;width:auto}
-    .pdoc{width:100%;min-height:297mm;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:#000}
-    .pdoc .phdr{width:100%;display:block;margin-top:10mm}
-    .pdoc .pftr{width:100%;display:block;margin-top:auto;margin-bottom:9mm}
-    .pbody{flex:1 0 auto;padding:6mm 16mm 8mm;font-size:11.5px;line-height:1.45}
-    .ptop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
-    .ptop h2{font-size:19px;color:#0a2a5e;letter-spacing:1px;margin:0}
-    .ptop .meta{text-align:right;font-size:11.5px;color:#222}
-    .ptop .meta div{margin:2px 0}
-    .psec{margin-bottom:10px}
-    .psec h3{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:#0a2a5e;
-      border-bottom:1px solid #c9d3e3;padding-bottom:3px;margin-bottom:5px;font-weight:700}
-    .psec p{margin:2px 0;font-size:11.5px;color:#111}
-    .pgreet p{margin:5px 0;text-align:justify;font-size:11.5px}
-    .pgreet .attn{margin-bottom:8px;text-align:left}
-    .ptable{width:100%;border-collapse:collapse;margin:12px 0 14px;border:1px solid #c9d3e3;table-layout:fixed}
-    .ptable th{background:#0a2a5e;color:#fff;font-size:9.6px;letter-spacing:.5px;text-transform:uppercase;
-      padding:8px 7px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,.18)}
-    .ptable th:last-child{border-right:0}
-    .ptable th.n{text-align:right}
-    .ptable td{padding:7px;font-size:10.6px;border-bottom:1px solid #e3e9f2;border-right:1px solid #eef2f8;vertical-align:top}
-    .ptable td:last-child{border-right:0}
-    .ptable tbody tr:nth-child(even){background:#f7f9fd}
-    .ptable td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-    .ptable tbody tr:last-child td{border-bottom:1px solid #c9d3e3}
-    .psum{width:46%;margin-left:auto;margin-bottom:6px}
-    .prow{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 4px}
-    .prow.tot{font-weight:800;font-size:13px;border-top:2px solid #0a2a5e;margin-top:5px;padding-top:6px;color:#0a2a5e}
-    .pinwords{font-size:11px;color:#111;margin:4px 0 14px;padding-top:6px;border-top:1px dashed #c9d3e3}
-    .pinwords strong{color:#0a2a5e}
-    .pterms{margin-top:14px;page-break-inside:avoid}
-    .pterms h3{font-size:11.5px;color:#0a2a5e;margin-bottom:5px}
-    .pterms p{margin:2.5px 0;font-size:10.8px;text-align:justify}
-    .pnote{margin-top:10px;font-size:10.5px;font-style:italic;color:#444}
-    .psig{margin-top:26px;font-size:11.5px;page-break-inside:avoid}
-    .psig .nm{font-weight:700;margin-top:20px}
-    .psig p{margin:1px 0}
+    .pdfdoc .page{page-break-after:always;break-after:page}
+    .pdfdoc .page:last-child{page-break-after:auto;break-after:auto}
   }
 </style>
 </head>
@@ -561,66 +564,159 @@ function buildPdfDocument(){
   const discAmt=sub*dpPct/100;
   const total=sub-discAmt;
 
-  let rows='';
-  items.forEach((it,i)=>{
-    rows+='<tr><td>'+(i+1)+'</td><td>'+esc(it.name)+'</td><td>'+esc(it.code)+'</td>'+
-      '<td class="n">'+fmt(it.price)+'</td><td class="n">'+it.qty+'</td>'+
-      '<td class="n">'+fmt(it.price*it.qty)+'</td></tr>';
-  });
+  const rowHtmls = items.map((it,i)=>
+    '<tr><td>'+(i+1)+'</td><td>'+esc(it.name)+'</td><td>'+esc(it.code)+'</td>'+
+    '<td class="n">'+fmt(it.price)+'</td><td class="n">'+it.qty+'</td>'+
+    '<td class="n">'+fmt(it.price*it.qty)+'</td></tr>'
+  );
 
   const termLines = $('termsText').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
-  $('printArea').innerHTML=
-    '<div class="pdoc">'+
-      '<img class="phdr" src="'+HEADER_IMG+'" alt="ALEL letterhead">'+
-      '<div class="pbody">'+
-        '<div class="ptop">'+
-          '<div><h2>QUOTATION</h2></div>'+
-          '<div class="meta">'+
-            '<div><strong>Date:</strong> '+qdate+'</div>'+
-            (qvalid?'<div><strong>Valid Until:</strong> '+qvalid+'</div>':'')+
-          '</div>'+
-        '</div>'+
-        '<div class="psec">'+
-          '<p><strong>'+(cname||'-')+'</strong></p>'+
-          (caddress?'<p>'+caddress+'</p>':'')+
-          ((cphone||cemail)?'<p>'+(cphone?'Phone: '+cphone:'')+(cemail?(cphone?' | ':'')+'Email: '+cemail:'')+'</p>':'')+
-        '</div>'+
-        '<div class="pgreet">'+
-          (cattn?'<p class="attn"><strong>Attention:</strong> '+cattn+'</p>':'')+
-          '<p>Dear Sir,</p>'+
-          '<p>Thank you for your kind interest in Akij Light Engineering Ltd. It is our pleasure to submit our offer for your kind consideration.</p>'+
-          '<p>We trust that you will find our offer in line with your requirements and look forward to the opportunity to establish a mutually beneficial business relationship with your esteemed organization.</p>'+
-        '</div>'+
-        '<table class="ptable">'+
-          '<thead><tr>'+
-            '<th style="width:5%">#</th>'+
-            '<th style="width:41%">Product Description</th>'+
-            '<th style="width:15%">Code</th>'+
-            '<th class="n" style="width:13%">Unit Price</th>'+
-            '<th class="n" style="width:8%">Qty</th>'+
-            '<th class="n" style="width:18%">Amount</th>'+
-          '</tr></thead>'+
-          '<tbody>'+rows+'</tbody>'+
-        '</table>'+
-        '<div class="psum">'+
-          '<div class="prow"><span>Subtotal</span><span>'+fmt(sub)+'</span></div>'+
-          '<div class="prow"><span>Discount ('+dpPct+'%)</span><span>'+fmt(discAmt)+'</span></div>'+
-          '<div class="prow tot"><span>Total (BDT)</span><span>'+fmt(total)+'</span></div>'+
-        '</div>'+
-        '<div class="pinwords"><strong>In Words:</strong> '+esc(amountInWords(total))+'</div>'+
-        '<div class="pterms"><h3>Commercial Terms &amp; Conditions</h3>'+
-          termLines.map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>'+
-        '<div class="pnote">This is a system-generated quotation and requires no signature.</div>'+
-        '<div class="psig">'+
-          '<p>Prepared by,</p>'+
-          '<p class="nm">Ahamed Emtiaz Shoubho</p>'+
-          '<p>Senior Manager &ndash; Corporate Sales</p>'+
-          '<p>Akij Light Engineering Limited</p>'+
-        '</div>'+
+  const THEAD =
+    '<thead><tr>'+
+      '<th style="width:5%">#</th>'+
+      '<th style="width:41%">Product Description</th>'+
+      '<th style="width:15%">Code</th>'+
+      '<th class="n" style="width:13%">Unit Price</th>'+
+      '<th class="n" style="width:8%">Qty</th>'+
+      '<th class="n" style="width:18%">Amount</th>'+
+    '</tr></thead>';
+
+  const H_meta =
+    '<div class="ptop">'+
+      '<div><h2>QUOTATION</h2></div>'+
+      '<div class="meta">'+
+        '<div><strong>Date:</strong> '+qdate+'</div>'+
+        (qvalid?'<div><strong>Valid Until:</strong> '+qvalid+'</div>':'')+
       '</div>'+
-      '<img class="pftr" src="'+FOOTER_IMG+'" alt="ALEL letterhead footer">'+
     '</div>';
+
+  const H_cust =
+    '<div class="psec">'+
+      '<p><strong>'+(cname||'-')+'</strong></p>'+
+      (caddress?'<p>'+caddress+'</p>':'')+
+      ((cphone||cemail)?'<p>'+(cphone?'Phone: '+cphone:'')+(cemail?(cphone?' | ':'')+'Email: '+cemail:'')+'</p>':'')+
+    '</div>';
+
+  const H_greet =
+    '<div class="pgreet">'+
+      (cattn?'<p class="attn"><strong>Attention:</strong> '+cattn+'</p>':'')+
+      '<p>Dear Sir,</p>'+
+      '<p>Thank you for your kind interest in Akij Light Engineering Ltd. It is our pleasure to submit our offer for your kind consideration.</p>'+
+      '<p>We trust that you will find our offer in line with your requirements and look forward to the opportunity to establish a mutually beneficial business relationship with your esteemed organization.</p>'+
+    '</div>';
+
+  const H_totals =
+    '<div class="psum">'+
+      '<div class="prow"><span>Subtotal</span><span>'+fmt(sub)+'</span></div>'+
+      '<div class="prow"><span>Discount ('+dpPct+'%)</span><span>'+fmt(discAmt)+'</span></div>'+
+      '<div class="prow tot"><span>Total (BDT)</span><span>'+fmt(total)+'</span></div>'+
+    '</div>';
+
+  const H_words = '<div class="pinwords"><strong>In Words:</strong> '+esc(amountInWords(total))+'</div>';
+
+  const H_terms = '<div class="pterms"><h3>Commercial Terms &amp; Conditions</h3>'+
+    termLines.map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>';
+
+  const H_note = '<div class="pnote">This is a system-generated quotation and requires no signature.</div>';
+
+  const H_sig =
+    '<div class="psig">'+
+      '<p>Prepared by,</p>'+
+      '<p class="nm">Ahamed Emtiaz Shoubho</p>'+
+      '<p>Senior Manager &ndash; Corporate Sales</p>'+
+      '<p>Akij Light Engineering Limited</p>'+
+    '</div>';
+
+  // ---------- measure ----------
+  const meas = document.createElement('div');
+  meas.className = 'pdfdoc';
+  meas.style.cssText = 'position:absolute;left:-99999px;top:0;visibility:hidden';
+  const pc = document.createElement('div');
+  pc.className = 'pcontent';
+  meas.appendChild(pc);
+  document.body.appendChild(meas);
+
+  const pxPerMm = 96 / 25.4;
+  const PAGE_H = Math.floor(243 * pxPerMm * 0.96);   // content box height in px, small safety margin
+  const CONTENT_W = 178 * pxPerMm;
+
+  function measure(html){
+    pc.style.width = CONTENT_W + 'px';
+    pc.innerHTML = html;
+    const el = pc.firstElementChild;
+    if(!el) return 0;
+    const cs = getComputedStyle(el);
+    return el.getBoundingClientRect().height +
+      (parseFloat(cs.marginTop)||0) + (parseFloat(cs.marginBottom)||0);
+  }
+
+  const hMeta = measure(H_meta);
+  const hCust = measure(H_cust);
+  const hGreet = measure(H_greet);
+  const hTotals = measure(H_totals);
+  const hWords = measure(H_words);
+  const hTerms = measure(H_terms);
+  const hNote = measure(H_note);
+  const hSig = measure(H_sig);
+
+  // table metrics
+  pc.innerHTML = '<table class="ptable">'+THEAD+'<tbody>'+rowHtmls.join('')+'</tbody></table>';
+  const tbl = pc.querySelector('table');
+  const hThead = tbl.querySelector('thead').getBoundingClientRect().height;
+  const rowHs = Array.from(tbl.querySelectorAll('tbody tr')).map(tr => tr.getBoundingClientRect().height);
+  const hTableMB = parseFloat(getComputedStyle(tbl).marginBottom)||0;
+
+  meas.remove();
+
+  // ---------- pack into pages ----------
+  const pages = [];
+  let cur = [], used = 0;
+  const flush = () => { if(cur.length){ pages.push(cur); cur = []; used = 0; } };
+  const addBlock = (html, h) => {
+    if(used + h > PAGE_H && cur.length) flush();
+    cur.push(html); used += h;
+  };
+
+  addBlock(H_meta, hMeta);
+  addBlock(H_cust, hCust);
+  addBlock(H_greet, hGreet);
+
+  // table rows, repeating the header on each page
+  let tableOpen = false;
+  for(let i=0;i<rowHtmls.length;i++){
+    const need = (tableOpen ? 0 : hThead) + rowHs[i];
+    if(used + need > PAGE_H && cur.length){
+      if(tableOpen){ cur.push('</tbody></table>'); used += hTableMB; tableOpen = false; }
+      flush();
+    }
+    if(!tableOpen){
+      cur.push('<table class="ptable">'+THEAD+'<tbody>');
+      used += hThead;
+      tableOpen = true;
+    }
+    cur.push(rowHtmls[i]);
+    used += rowHs[i];
+  }
+  if(tableOpen){ cur.push('</tbody></table>'); used += hTableMB; tableOpen = false; }
+
+  addBlock(H_totals, hTotals);
+  addBlock(H_words, hWords);
+  addBlock(H_terms, hTerms);
+  addBlock(H_note, hNote);
+  addBlock(H_sig, hSig);
+  flush();
+
+  // ---------- render ----------
+  const pageHtml = pages.map(body =>
+    '<div class="page">'+
+      '<img class="phdr" src="'+HEADER_IMG+'" alt="ALEL letterhead">'+
+      '<div class="pcontent">'+body.join('')+'</div>'+
+      '<img class="pftr" src="'+FOOTER_IMG+'" alt="ALEL letterhead footer">'+
+    '</div>'
+  ).join('');
+
+  $('printArea').innerHTML = '<div class="pdfdoc">'+pageHtml+'</div>';
 
     resolve();
   });
@@ -628,4 +724,6 @@ function buildPdfDocument(){
 </script>
 </body>
 </html>
+
+
 
