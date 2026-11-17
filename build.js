@@ -59,8 +59,8 @@ console.log(summary.join('\n'));
 
 // ---------- Letterhead images ----------
 const tmp = 'C:/Users/USER/AppData/Local/Temp/opencode/';
-const headerB64 = fs.readFileSync(tmp + 'head3-b64.txt', 'utf8').trim();
-const footerB64 = fs.readFileSync(tmp + 'foot3-b64.txt', 'utf8').trim();
+const headerB64 = fs.readFileSync(tmp + 'head4-b64.txt', 'utf8').trim();
+const footerB64 = fs.readFileSync(tmp + 'foot4-b64.txt', 'utf8').trim();
 
 let tpl = fs.readFileSync('quotation-template.html', 'utf8');
 tpl = tpl
@@ -71,3 +71,4 @@ tpl = tpl
 fs.writeFileSync('index.html', tpl);
 fs.writeFileSync('alel-quotation.html', tpl);
 console.log('Built index.html (' + (tpl.length / 1024).toFixed(0) + ' KB)');
+

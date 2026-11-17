@@ -143,14 +143,22 @@
       border-bottom:1px solid #c9d3e3;padding-bottom:3px;margin-bottom:5px;font-weight:700}
     .psec p{margin:2px 0;font-size:11.5px;color:#111}
     .pgreet p{margin:5px 0;text-align:justify;font-size:11.5px}
-    .ptable{width:100%;border-collapse:collapse;margin:10px 0 12px}
-    .ptable th{background:#0a2a5e;color:#fff;font-size:10.5px;padding:7px 6px;text-align:left;font-weight:700}
+    .pgreet .attn{margin-bottom:8px;text-align:left}
+    .ptable{width:100%;border-collapse:collapse;margin:12px 0 14px;border:1px solid #c9d3e3;table-layout:fixed}
+    .ptable th{background:#0a2a5e;color:#fff;font-size:9.6px;letter-spacing:.5px;text-transform:uppercase;
+      padding:8px 7px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,.18)}
+    .ptable th:last-child{border-right:0}
     .ptable th.n{text-align:right}
-    .ptable td{border-bottom:1px solid #dde3ec;padding:6px;font-size:11px;vertical-align:top}
-    .ptable td.n{text-align:right;font-variant-numeric:tabular-nums}
-    .psum{width:46%;margin-left:auto;margin-bottom:12px}
+    .ptable td{padding:7px;font-size:10.6px;border-bottom:1px solid #e3e9f2;border-right:1px solid #eef2f8;vertical-align:top}
+    .ptable td:last-child{border-right:0}
+    .ptable tbody tr:nth-child(even){background:#f7f9fd}
+    .ptable td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .ptable tbody tr:last-child td{border-bottom:1px solid #c9d3e3}
+    .psum{width:46%;margin-left:auto;margin-bottom:6px}
     .prow{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 4px}
     .prow.tot{font-weight:800;font-size:13px;border-top:2px solid #0a2a5e;margin-top:5px;padding-top:6px;color:#0a2a5e}
+    .pinwords{font-size:11px;color:#111;margin:4px 0 14px;padding-top:6px;border-top:1px dashed #c9d3e3}
+    .pinwords strong{color:#0a2a5e}
     .pterms{margin-top:14px;page-break-inside:avoid}
     .pterms h3{font-size:11.5px;color:#0a2a5e;margin-bottom:5px}
     .pterms p{margin:2.5px 0;font-size:10.8px;text-align:justify}
@@ -181,7 +189,7 @@
         <h2><span class="ic">&#128203;</span> Quotation Details</h2>
         <div class="row">
           <div><label>Date</label><input id="qdate" type="date"></div>
-          <div><label>Valid Until</label><input id="qvalid" type="date"></div>
+          <div><label>Valid Until <span style="font-weight:400;text-transform:none">(optional)</span></label><input id="qvalid" type="date"></div>
         </div>
 
         <h2 style="margin-top:18px"><span class="ic">&#128100;</span> Customer Information</h2>
@@ -270,8 +278,8 @@
 
 <script>
 const CATALOG = __CATALOG_JSON__;
-const HEADER_IMG = 'data:image/jpeg;base64,__HEADER_B64__';
-const FOOTER_IMG = 'data:image/jpeg;base64,__FOOTER_B64__';
+const HEADER_IMG = 'data:image/png;base64,__HEADER_B64__';
+const FOOTER_IMG = 'data:image/png;base64,__FOOTER_B64__';
 
 const PRICE_TYPES = [
   { id: 'dp',  label: 'DP' },
@@ -322,11 +330,40 @@ function syncPayTerm(){
   lastAutoPayLine = line;
 }
 
+// ---- amount in words (BDT, lakh/crore numbering) ----
+function intToWords(num){
+  num = Math.floor(Math.abs(num));
+  if(num === 0) return 'Zero';
+  const ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  const tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  const two = (n) => n < 20 ? ones[n] : tens[Math.floor(n/10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+  const three = (n) => {
+    const h = Math.floor(n/100), r = n % 100;
+    return (h ? ones[h] + ' Hundred' + (r ? ' ' : '') : '') + (r ? two(r) : '');
+  };
+  const parts = [];
+  let n = num;
+  const crore = Math.floor(n/10000000); n %= 10000000;
+  const lakh  = Math.floor(n/100000);   n %= 100000;
+  const thou  = Math.floor(n/1000);     n %= 1000;
+  if(crore) parts.push(intToWords(crore) + ' Crore');
+  if(lakh)  parts.push(two(lakh) + ' Lakh');
+  if(thou)  parts.push(two(thou) + ' Thousand');
+  if(n)     parts.push(three(n));
+  return parts.join(' ');
+}
+function amountInWords(amount){
+  const v = Math.round(Math.abs(Number(amount) || 0) * 100) / 100;
+  const taka = Math.floor(v);
+  const paisa = Math.round((v - taka) * 100);
+  let out = intToWords(taka) + ' Taka';
+  if(paisa > 0) out += ' and ' + intToWords(paisa) + ' Paisa';
+  return out + ' Only';
+}
+
 window.addEventListener('DOMContentLoaded', () => {
   const d = new Date();
   $('qdate').value = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-  const v = new Date(); v.setDate(v.getDate()+15);
-  $('qvalid').value = v.getFullYear()+'-'+pad(v.getMonth()+1)+'-'+pad(v.getDate());
 
   renderChannels();
   renderPriceTypes();
@@ -518,9 +555,6 @@ function buildPdfDocument(){
   const qdate=esc($('qdate').value), qvalid=esc($('qvalid').value);
   const cname=esc($('cname').value), cattn=esc($('cattn').value);
   const caddress=esc($('caddress').value), cphone=esc($('cphone').value), cemail=esc($('cemail').value);
-  const daysRaw=$('creditDays').value.trim();
-  const days=daysRaw===''?'':String(Math.max(0, parseInt(daysRaw,10)||0));
-  const creditText = days==='' ? 'As agreed' : (days==='0' ? 'Cash / Advance payment' : days+' Days Credit');
 
   const sub=items.reduce((s,it)=>s+it.price*it.qty,0);
   const dpPct=Math.min(100,Math.max(0, parseFloat($('discPct').value)||0));
@@ -544,24 +578,29 @@ function buildPdfDocument(){
           '<div><h2>QUOTATION</h2></div>'+
           '<div class="meta">'+
             '<div><strong>Date:</strong> '+qdate+'</div>'+
-            '<div><strong>Valid Until:</strong> '+qvalid+'</div>'+
+            (qvalid?'<div><strong>Valid Until:</strong> '+qvalid+'</div>':'')+
           '</div>'+
         '</div>'+
         '<div class="psec">'+
-          '<h3>Customer</h3>'+
           '<p><strong>'+(cname||'-')+'</strong></p>'+
-          (cattn?'<p>Attention: '+cattn+'</p>':'')+
           (caddress?'<p>'+caddress+'</p>':'')+
           ((cphone||cemail)?'<p>'+(cphone?'Phone: '+cphone:'')+(cemail?(cphone?' | ':'')+'Email: '+cemail:'')+'</p>':'')+
-          '<p>Payment Terms: '+creditText+'</p>'+
         '</div>'+
         '<div class="pgreet">'+
+          (cattn?'<p class="attn"><strong>Attention:</strong> '+cattn+'</p>':'')+
           '<p>Dear Sir,</p>'+
           '<p>Thank you for your kind interest in Akij Light Engineering Ltd. It is our pleasure to submit our offer for your kind consideration.</p>'+
           '<p>We trust that you will find our offer in line with your requirements and look forward to the opportunity to establish a mutually beneficial business relationship with your esteemed organization.</p>'+
         '</div>'+
         '<table class="ptable">'+
-          '<thead><tr><th>#</th><th>Product Description</th><th>Code</th><th class="n">Unit Price</th><th class="n">Qty</th><th class="n">Amount</th></tr></thead>'+
+          '<thead><tr>'+
+            '<th style="width:5%">#</th>'+
+            '<th style="width:41%">Product Description</th>'+
+            '<th style="width:15%">Code</th>'+
+            '<th class="n" style="width:13%">Unit Price</th>'+
+            '<th class="n" style="width:8%">Qty</th>'+
+            '<th class="n" style="width:18%">Amount</th>'+
+          '</tr></thead>'+
           '<tbody>'+rows+'</tbody>'+
         '</table>'+
         '<div class="psum">'+
@@ -569,6 +608,7 @@ function buildPdfDocument(){
           '<div class="prow"><span>Discount ('+dpPct+'%)</span><span>'+fmt(discAmt)+'</span></div>'+
           '<div class="prow tot"><span>Total (BDT)</span><span>'+fmt(total)+'</span></div>'+
         '</div>'+
+        '<div class="pinwords"><strong>In Words:</strong> '+esc(amountInWords(total))+'</div>'+
         '<div class="pterms"><h3>Commercial Terms &amp; Conditions</h3>'+
           termLines.map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>'+
         '<div class="pnote">This is a system-generated quotation and requires no signature.</div>'+
@@ -588,3 +628,4 @@ function buildPdfDocument(){
 </script>
 </body>
 </html>
+
