@@ -60,13 +60,20 @@
   #termsText{font-size:12.5px;line-height:1.55;min-height:190px;resize:vertical;background:#fcfdff}
   .hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
   .prepopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .prepopt{border:1.5px solid var(--border);border-radius:10px;padding:11px 12px;cursor:pointer;
-    background:#fff;transition:all .13s}
-  .prepopt:hover{border-color:#b9c6db}
-  .prepopt.active{border-color:var(--brand);background:#f3f7fd;box-shadow:0 4px 12px rgba(10,42,94,.10)}
-  .prepopt .pn{font-size:13px;font-weight:700;color:var(--text);line-height:1.25}
-  .prepopt .pd{font-size:11.5px;color:var(--brand);font-weight:600;margin-top:3px}
-  .prepopt .pm2{font-size:10.8px;color:var(--muted);margin-top:6px;line-height:1.5;word-break:break-word}
+  .prepopt{position:relative;border-radius:10px;padding:15px 14px;cursor:pointer;color:#fff;
+    font-size:13.5px;font-weight:700;line-height:1.3;border:2px solid transparent;
+    transition:all .15s;user-select:none}
+  .prepopt[data-i="0"]{background:linear-gradient(135deg,#1b4fa0,#0a2a5e)}
+  .prepopt[data-i="1"]{background:linear-gradient(135deg,#12855a,#0b5c38)}
+  .prepopt:not(.active){opacity:.75}
+  .prepopt:hover{opacity:.95}
+  .prepopt.active{opacity:1;border-color:#fff;box-shadow:0 0 0 3px rgba(10,42,94,.15),0 8px 20px rgba(10,40,80,.20)}
+  .prepopt .chk{position:absolute;top:9px;right:11px;font-size:12px;display:none}
+  .prepopt.active .chk{display:inline}
+  .prepcard{max-width:470px}
+  .prepcard.warn{animation:shake .4s;box-shadow:0 0 0 3px rgba(225,29,46,.28)}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+  .prepHintErr{color:var(--danger)!important;font-weight:700;font-style:normal}
   @media(max-width:520px){.prepopts{grid-template-columns:1fr}}
 
   /* segmented buttons */
@@ -222,9 +229,6 @@
           </div>
         </div>
 
-        <h2 style="margin-top:18px"><span class="ic">&#9997;</span> Prepared By</h2>
-        <div class="prepopts" id="prepOpts"></div>
-
         <h2 style="margin-top:18px"><span class="ic">&#128220;</span> Commercial Terms &amp; Conditions</h2>
         <textarea id="termsText" rows="11" spellcheck="false" placeholder="One term per line..."></textarea>
         <div class="hint">Auto-filled with the standard terms &mdash; edit, add or remove any line.</div>
@@ -284,6 +288,12 @@
     </div>
   </div>
 
+  <div class="card prepcard" style="margin-top:20px">
+    <h2><span class="ic">&#9997;</span> Prepared By</h2>
+    <div class="prepopts" id="prepOpts"></div>
+    <div class="hint" id="prepHint">Select who prepared this quotation &mdash; required before generating the PDF.</div>
+  </div>
+
   <div class="footer-note">ALEL Quotation Builder &middot; Prices from RTM item-rate (Business Unit: ALEL)</div>
 </div>
 
@@ -324,7 +334,7 @@ const PREPARERS = [
     email: 'sadhinkhan@akijlightengineering.com'
   }
 ];
-let prepIndex = 0;
+let prepIndex = -1;
 
 const DEFAULT_TERMS = [
   'Payment: 100% advance along with Work Order.',
@@ -443,12 +453,17 @@ function renderPreparers(){
   PREPARERS.forEach((p, i) => {
     const d = document.createElement('div');
     d.className = 'prepopt' + (i === prepIndex ? ' active' : '');
-    d.innerHTML = '<div class="pn"></div><div class="pd"></div><div class="pm2"></div>';
-    d.querySelector('.pn').textContent = p.name;
-    d.querySelector('.pd').textContent = p.desig;
-    d.querySelector('.pm2').textContent = p.phone + '\n' + p.email;
-    d.querySelector('.pm2').style.whiteSpace = 'pre-line';
-    d.onclick = () => { prepIndex = i; renderPreparers(); };
+    d.setAttribute('data-i', i);
+    d.innerHTML = '<span class="chk">&#10003;</span>';
+    d.appendChild(document.createTextNode(p.name));
+    d.onclick = () => {
+      prepIndex = i;
+      renderPreparers();
+      const card = document.querySelector('.prepcard');
+      if(card) card.classList.remove('warn');
+      const hint = $('prepHint');
+      if(hint){ hint.classList.remove('prepHintErr'); hint.innerHTML = 'Selected &mdash; this person will appear on the PDF.'; }
+    };
     wrap.appendChild(d);
   });
 }
@@ -580,6 +595,15 @@ function recalc(){
 
 function generatePdf(){
   if(!items.length){ alert('Please add at least one product to the quotation.'); return; }
+  if(prepIndex < 0){
+    const card = document.querySelector('.prepcard');
+    if(card){ card.classList.add('warn'); card.scrollIntoView({behavior:'smooth', block:'center'}); }
+    const hint = $('prepHint');
+    if(hint){ hint.classList.add('prepHintErr'); hint.textContent = 'Please select who prepared this quotation before generating the PDF.'; }
+    setTimeout(() => { const c = document.querySelector('.prepcard'); if(c) c.classList.remove('warn'); }, 1200);
+    alert('Please select who prepared this quotation before generating the PDF.');
+    return;
+  }
   buildPdfDocument()
     .then(() => waitForImages($('printArea')))
     .then(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))))
