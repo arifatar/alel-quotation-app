@@ -57,6 +57,8 @@
     transition:border-color .15s,box-shadow .15s}
   input:focus,select:focus,textarea:focus{border-color:var(--brand2);box-shadow:0 0 0 3px rgba(18,60,125,.12)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #termsText{font-size:12.5px;line-height:1.55;min-height:190px;resize:vertical;background:#fcfdff}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic}
 
   /* segmented buttons */
   .seg{display:flex;gap:8px;flex-wrap:wrap}
@@ -129,8 +131,8 @@
     .app,.footer-note,.overlay,.pop,.toast{display:none!important}
     .print-area{display:block}
     .pdoc{width:100%;min-height:297mm;display:flex;flex-direction:column;font-family:Arial,Helvetica,sans-serif;color:#000}
-    .pdoc .phdr{width:100%;display:block}
-    .pdoc .pftr{width:100%;display:block;margin-top:auto}
+    .pdoc .phdr{width:100%;display:block;margin-top:10mm}
+    .pdoc .pftr{width:100%;display:block;margin-top:auto;margin-bottom:9mm}
     .pbody{flex:1 0 auto;padding:6mm 16mm 8mm;font-size:11.5px;line-height:1.45}
     .ptop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
     .ptop h2{font-size:19px;color:#0a2a5e;letter-spacing:1px;margin:0}
@@ -198,6 +200,10 @@
             <input id="creditDays" type="number" min="0" step="1" value="15" placeholder="e.g. 15, 30, 45">
           </div>
         </div>
+
+        <h2 style="margin-top:18px"><span class="ic">&#128220;</span> Commercial Terms &amp; Conditions</h2>
+        <textarea id="termsText" rows="11" spellcheck="false" placeholder="One term per line..."></textarea>
+        <div class="hint">Auto-filled with the standard terms &mdash; edit, add or remove any line.</div>
       </div>
     </div>
 
@@ -278,6 +284,16 @@ let selectedProduct = null;
 let activeChannel = Object.keys(CATALOG)[0];
 let activePrice = 'dp';
 
+const DEFAULT_TERMS = [
+  'Payment: 100% advance along with Work Order.',
+  'Mode of Payment: Cash/Pay Order/EFTN or Account Payee cheque in favor of Akij Light Engineering Ltd.',
+  'Offer validity: Our offer remains valid 15 days from the date of submission.',
+  'Packaging: Standard packaging. Any damaged/broken goods must be immediately brought to the notice of ALEL.',
+  'Delivery of goods: Delivery will be effected within 3-5 working days, free of cost of transportation at your site (within jurisdiction area) from the date of receiving your work order.',
+  'VAT & AIT: VAT & AIT are inclusive with the offer.',
+  'Warranty Period: 01 year (12 Months) from the date of Delivery.'
+];
+
 const $ = (id) => document.getElementById(id);
 const pad = (n) => (n < 10 ? '0' + n : '' + n);
 const fmt = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -285,6 +301,26 @@ const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g
 
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1700); }
 function priceOf(p){ return Number(p[activePrice] || p.dp || 0); }
+
+// ---- payment / terms sync ----
+let lastAutoPayLine = '';
+function payLine(days){
+  if(days === '') return 'As per agreement';
+  if(days === '0') return '100% advance along with Work Order';
+  return days + ' days credit from the date of invoice';
+}
+function syncPayTerm(){
+  const ta = $('termsText');
+  if(!ta) return;
+  const line = '1. Payment: ' + payLine($('creditDays').value.trim()) + '.';
+  const lines = ta.value.split(/\r?\n/);
+  // only auto-update line 1 if the user hasn't customised it
+  if(lines.length && (lines[0] === lastAutoPayLine || lastAutoPayLine === '')){
+    lines[0] = line;
+    ta.value = lines.join('\n');
+  }
+  lastAutoPayLine = line;
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   const d = new Date();
@@ -297,6 +333,11 @@ window.addEventListener('DOMContentLoaded', () => {
   buildCategories();
   renderProducts();
   recalc();
+
+  // pre-fill editable terms
+  lastAutoPayLine = '1. Payment: ' + payLine($('creditDays').value.trim()) + '.';
+  $('termsText').value = [lastAutoPayLine].concat(DEFAULT_TERMS.slice(1).map((t, i) => (i + 2) + '. ' + t)).join('\n');
+  $('creditDays').addEventListener('input', syncPayTerm);
 });
 
 function renderChannels(){
@@ -467,15 +508,7 @@ function generatePdf(){
       '<td class="n">'+fmt(it.price*it.qty)+'</td></tr>';
   });
 
-  const terms=[
-    'Payment: '+(days===''?'As per agreement':(days==='0'?'100% advance along with Work Order':days+' days credit from the date of invoice'))+'.',
-    'Mode of Payment: Cash/Pay Order/EFTN or Account Payee cheque in favor of Akij Light Engineering Ltd.',
-    'Offer validity: Our offer remains valid 15 days from the date of submission.',
-    'Packaging: Standard packaging. Any damaged/broken goods must be immediately brought to the notice of ALEL.',
-    'Delivery of goods: Delivery will be effected within 3-5 working days, free of cost of transportation at your site (within jurisdiction area) from the date of receiving your work order.',
-    'VAT &amp; AIT: VAT &amp; AIT are inclusive with the offer.',
-    'Warranty Period: 01 year (12 Months) from the date of Delivery.'
-  ];
+  const termLines = $('termsText').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
 
   $('printArea').innerHTML=
     '<div class="pdoc">'+
@@ -511,7 +544,7 @@ function generatePdf(){
           '<div class="prow tot"><span>Total (BDT)</span><span>'+fmt(total)+'</span></div>'+
         '</div>'+
         '<div class="pterms"><h3>Commercial Terms &amp; Conditions</h3>'+
-          terms.map((t,i)=>'<p>'+(i+1)+'. '+t+'</p>').join('')+'</div>'+
+          termLines.map(t=>'<p>'+esc(t)+'</p>').join('')+'</div>'+
         '<div class="pnote">This is a system-generated quotation and requires no signature.</div>'+
         '<div class="psig">'+
           '<p>Prepared by,</p>'+
